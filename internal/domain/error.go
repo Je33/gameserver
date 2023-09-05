@@ -7,4 +7,5 @@ var (
 	ErrConversion  = errors.New("conversion error")
 	ErrNoDocuments = errors.New("no documents")
 	ErrConfig      = errors.New("config error")
+	ErrSignature   = errors.New("signature error")
 )

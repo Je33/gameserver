@@ -87,10 +87,12 @@ func (h *UserHandler) Me(ctx echo.Context) error {
 	if !ok {
 		return fmt.Errorf("%s: auth user error", userErrorPrefix)
 	}
+
 	claims, ok := auth.Claims.(*jwtCustomClaims)
 	if !ok {
 		return fmt.Errorf("%s: auth claims error", userErrorPrefix)
 	}
+
 	wallet := claims.Wallet
 	user, err := h.service.GetByWallet(ctx.Request().Context(), wallet)
 	if err != nil {

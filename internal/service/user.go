@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/storyicon/sigverify"
 	"server/internal/domain"
 	"time"
 )
@@ -12,11 +13,6 @@ import (
 var (
 	userErrorPrefix = "[service.user]"
 )
-
-type jwtCustomClaims struct {
-	Wallet string
-	jwt.RegisteredClaims
-}
 
 //go:generate mockery --dir . --name UserRepository --output ./mocks
 type UserRepository interface {
@@ -34,9 +30,20 @@ func NewUserService(repository UserRepository) *UserService {
 
 func (s *UserService) Auth(ctx context.Context, req *domain.UserAuthReq) error {
 
-	// TODO: check wallet and signature
+	// check wallet signature
+	valid, err := sigverify.VerifyEllipticCurveHexSignatureEx(
+		common.HexToAddress(req.Wallet),
+		[]byte(req.Message),
+		req.Sign,
+	)
+	if err != nil {
+		return errors.Wrapf(err, "%s: sign", userErrorPrefix)
+	}
+	if !valid {
+		return errors.Wrapf(domain.ErrSignature, "%s: sign", userErrorPrefix)
+	}
 
-	_, err := s.repository.GetByWallet(ctx, req.Wallet)
+	_, err = s.repository.GetByWallet(ctx, req.Wallet)
 
 	// if user not exists
 	if errors.Is(err, domain.ErrNoDocuments) {
