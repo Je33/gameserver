@@ -28,17 +28,17 @@ func (_m *UserService) Auth(_a0 context.Context, _a1 *domain.UserAuthReq) error 
 	return r0
 }
 
-// GetByWallet provides a mock function with given fields: ctx, wallet
-func (_m *UserService) GetByWallet(ctx context.Context, wallet string) (*domain.User, error) {
-	ret := _m.Called(ctx, wallet)
+// GetByWallet provides a mock function with given fields: _a0, _a1
+func (_m *UserService) GetByWallet(_a0 context.Context, _a1 string) (*domain.User, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *domain.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (*domain.User, error)); ok {
-		return rf(ctx, wallet)
+		return rf(_a0, _a1)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) *domain.User); ok {
-		r0 = rf(ctx, wallet)
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.User)
@@ -46,7 +46,7 @@ func (_m *UserService) GetByWallet(ctx context.Context, wallet string) (*domain.
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, wallet)
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/google/uuid"
-	"github.com/pkg/errors"
-	"github.com/storyicon/sigverify"
 	"server/internal/domain"
+	"server/pkg/sign"
 	"time"
+
+	"github.com/lithammer/shortuuid/v3"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -31,16 +31,13 @@ func NewUserService(repository UserRepository) *UserService {
 func (s *UserService) Auth(ctx context.Context, req *domain.UserAuthReq) error {
 
 	// check wallet signature
-	valid, err := sigverify.VerifyEllipticCurveHexSignatureEx(
-		common.HexToAddress(req.Wallet),
-		[]byte(req.Message),
+	err := sign.VerifySignature(
+		req.Wallet,
+		req.Message,
 		req.Sign,
 	)
 	if err != nil {
-		return errors.Wrapf(err, "%s: sign", userErrorPrefix)
-	}
-	if !valid {
-		return errors.Wrapf(domain.ErrSignature, "%s: sign", userErrorPrefix)
+		return errors.Wrapf(err, "%s: signature check fail", userErrorPrefix)
 	}
 
 	_, err = s.repository.GetByWallet(ctx, req.Wallet)
@@ -50,14 +47,14 @@ func (s *UserService) Auth(ctx context.Context, req *domain.UserAuthReq) error {
 
 		// create new user and issue tokens
 		newUser := &domain.User{
-			ID:        uuid.New().String(),
+			ID:        shortuuid.New(),
 			Wallet:    req.Wallet,
 			Nickname:  "", // TODO: generate random nickname
 			CreatedAt: time.Now(),
 		}
 		err = s.repository.Create(ctx, newUser)
 		if err != nil {
-			return errors.Wrapf(err, "%s: auth", userErrorPrefix)
+			return errors.Wrapf(err, "%s: repo save error", userErrorPrefix)
 		}
 	}
 

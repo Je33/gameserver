@@ -1,3 +1,8 @@
+.PHONY: dc mocks test build run lint
+
+dc:
+	docker-compose up  --remove-orphans --build
+
 mocks:
 	go generate ./...
 
@@ -9,3 +14,6 @@ build:
 
 run:
 	go run -race cmd/server/main.go
+
+lint:
+	golangci-lint run

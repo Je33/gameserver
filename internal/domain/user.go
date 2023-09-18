@@ -13,6 +13,6 @@ type User struct {
 
 type UserAuthReq struct {
 	Wallet  string
-	Sign    string
 	Message string
+	Sign    string
 }

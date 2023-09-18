@@ -2,16 +2,17 @@ package rest
 
 import (
 	"context"
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	echoLog "github.com/labstack/gommon/log"
 	"net/http"
 	"server/internal/config"
 	"server/internal/repository/db/mongodb"
 	"server/internal/service"
 	"server/internal/transport/rest/handler"
 	"time"
+
+	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	echoLog "github.com/labstack/gommon/log"
 )
 
 func RunRest() error {
@@ -57,7 +58,7 @@ func RunRest() error {
 	// User
 	r := v1.Group("/user")
 	r.Use(echojwt.JWT([]byte(cfg.JWTSecret)))
-	r.POST("", userHandler.Me)
+	r.GET("", userHandler.Me)
 
 	// Start server
 	s := &http.Server{

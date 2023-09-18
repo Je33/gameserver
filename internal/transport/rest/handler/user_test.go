@@ -1,8 +1,20 @@
 package handler
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestUserHandler_Auth(t *testing.T) {
+
+	// userAuthReq := &model.UserAuthReq{
+	// 	Wallet: "",
+	// 	Message: "",
+	// 	Sign: "",
+	// }
+
+	// userService := mocks.NewUserService(t)
+
+	// UserHandler
 
 }
 

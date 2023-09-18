@@ -46,7 +46,7 @@ func Connect(ctx context.Context) (*DB, error) {
 func (db *DB) Ping(ctx context.Context) error {
 	// Send a ping to check connection
 	var result bson.M
-	if err := db.Database("admin").RunCommand(ctx, bson.D{{"ping", 1}}).Decode(&result); err != nil {
+	if err := db.Database("admin").RunCommand(ctx, bson.D{{Key: "ping", Value: 1}}).Decode(&result); err != nil {
 		return errors.Wrapf(err, "%s: disconnected", mongodbErrorPrefix)
 	}
 	return nil

@@ -3,10 +3,13 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"regexp"
+	"sync"
+
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
-	"log"
-	"sync"
 )
 
 type Config struct {
@@ -22,10 +25,16 @@ var (
 	once   sync.Once
 )
 
+const projectDirName = "gameserver"
+
 // Get reads config from environment. Once.
 func Get() *Config {
 	once.Do(func() {
-		err := godotenv.Load() // load .env file
+		projectName := regexp.MustCompile(`^(.*` + projectDirName + `)`)
+		currentWorkDirectory, _ := os.Getwd()
+		rootPath := projectName.Find([]byte(currentWorkDirectory))
+
+		err := godotenv.Load(string(rootPath) + `/.env`) // load .env file
 		if err != nil {
 			log.Fatal(err)
 		}

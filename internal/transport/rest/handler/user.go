@@ -3,14 +3,15 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	"net/http"
 	"server/internal/config"
 	"server/internal/domain"
 	"server/internal/transport/rest/model"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -25,7 +26,7 @@ type jwtCustomClaims struct {
 //go:generate mockery --dir . --name UserService --output ./mocks
 type UserService interface {
 	Auth(context.Context, *domain.UserAuthReq) error
-	GetByWallet(ctx context.Context, wallet string) (*domain.User, error)
+	GetByWallet(context.Context, string) (*domain.User, error)
 }
 
 type UserHandler struct {
@@ -59,7 +60,7 @@ func (h *UserHandler) Auth(ctx echo.Context) error {
 	claims := &jwtCustomClaims{
 		restUserAuthReq.Wallet,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 168)),
 		},
 	}
 
@@ -79,25 +80,33 @@ func (h *UserHandler) Auth(ctx echo.Context) error {
 		RefreshToken: "",
 	}
 
-	return ctx.JSON(http.StatusCreated, restUserAuthRes)
+	return ctx.JSON(http.StatusOK, restUserAuthRes)
 }
 
 func (h *UserHandler) Me(ctx echo.Context) error {
 	auth, ok := ctx.Get("user").(*jwt.Token)
 	if !ok {
-		return fmt.Errorf("%s: auth user error", userErrorPrefix)
+		return fmt.Errorf("%s: auth header error", userErrorPrefix)
 	}
 
-	claims, ok := auth.Claims.(*jwtCustomClaims)
+	if !auth.Valid {
+		return fmt.Errorf("%s: auth invalid", userErrorPrefix)
+	}
+
+	claims, ok := auth.Claims.(jwt.MapClaims)
 	if !ok {
 		return fmt.Errorf("%s: auth claims error", userErrorPrefix)
 	}
 
-	wallet := claims.Wallet
+	wallet, ok := claims["wallet"].(string)
+	if !ok {
+		return fmt.Errorf("%s: auth claim wallet error", userErrorPrefix)
+	}
+
 	user, err := h.service.GetByWallet(ctx.Request().Context(), wallet)
 	if err != nil {
 		return errors.Wrapf(err, "%s: user not found", userErrorPrefix)
 	}
 
-	return ctx.JSON(http.StatusCreated, user)
+	return ctx.JSON(http.StatusOK, user)
 }
